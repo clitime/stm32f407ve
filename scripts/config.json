@@ -1,0 +1,6 @@
+{
+    "template_file": "./version_template.c",
+    "template_word": "SEMVER",
+    "template_hash": "HASH_DATA",
+    "version_path": "../src/version/version.c"
+}
