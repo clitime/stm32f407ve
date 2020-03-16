@@ -30,7 +30,7 @@ void test_incorrectAddress(void) {
 void test_broadcastPacket(void) {
     uint8_t test_packet[] = {0xff, 0x02, 0x03, 0x04, 0x00};
     struct packet *act_packet = parse_recieve(test_packet, sizeof(test_packet));
-    struct packet expected = {.addr = 0xff, .id=0x02, .sqn=0x03, .cmd=0x04, .len=0x00};
+    struct packet expected = {.addr = test_addr, .id=0x02, .sqn=0x03, .cmd=0x04, .len=0x00};
     TEST_ASSERT_EQUAL_MEMORY(&expected, act_packet, sizeof(struct packet));
 }
 

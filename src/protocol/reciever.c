@@ -14,7 +14,7 @@ const uint8_t minimal_frame_size = 7;
 
 enum {
     frame_amount = 2,
-    frame_size = 64,
+    frame_size = sizeof(struct packet),
 };
 
 static uint8_t frame[frame_size];
@@ -131,80 +131,48 @@ static bool check_crc(void) {
 
 
 static void parse_transmit(const struct packet *packet, const struct packet *recv_packet) {
-    uint8_t trmt_buf[sizeof(struct packet) * 2 + 2] = {0};
+    uint8_t tmp_buf[sizeof(struct packet)] = {0};
     uint8_t ix = 0;
-    trmt_buf[ix++] = bs_start;
-
 #if BROADCAST_ADDR==0xffff
-    trmt_buf[ix++] = (uint8_t)(recv_packet->addr & 0xff);
-    trmt_buf[ix++] = (uint8_t)((recv_packet->addr >> 8) & 0xff);
+    tmp_buf[ix++] = (uint8_t)(recv_packet->addr & 0xff);
+    tmp_buf[ix++] = (uint8_t)((recv_packet->addr >> 8) & 0xff);
 #else
-    if (recv_packet->addr >= bs_start) {
-        trmt_buf[ix++] = bs_stuffing;
-        trmt_buf[ix++] = bs_stuffing - recv_packet->addr;
-    } else {
-        trmt_buf[ix++] = recv_packet->addr;
-    }
+    tmp_buf[ix++] = recv_packet->addr;
 #endif
 
-    if (recv_packet->id >= bs_start) {
-        trmt_buf[ix++] = bs_stuffing;
-        trmt_buf[ix++] = bs_stuffing - recv_packet->id;
-    } else {
-        trmt_buf[ix++] = recv_packet->id;
-    }
-
-    if (recv_packet->sqn >= bs_start) {
-        trmt_buf[ix++] = bs_stuffing;
-        trmt_buf[ix++] = bs_stuffing - recv_packet->sqn;
-    } else {
-        trmt_buf[ix++] = recv_packet->sqn;
-    }
-
-    if (packet->cmd >= bs_start) {
-        trmt_buf[ix++] = bs_stuffing;
-        trmt_buf[ix++] = bs_stuffing - packet->cmd;
-    } else {
-        trmt_buf[ix++] = packet->cmd;
-    }
-
-    if (packet->len >= bs_start) {
-        trmt_buf[ix++] = bs_stuffing;
-        trmt_buf[ix++] = bs_stuffing - packet->len;
-    } else {
-        trmt_buf[ix++] = packet->len;
-    }
+    tmp_buf[ix++] = recv_packet->id;
+    tmp_buf[ix++] = recv_packet->sqn;
+    tmp_buf[ix++] = packet->cmd;
+    tmp_buf[ix++] = packet->len;
 
     if (packet->len > 0) {
         for (uint8_t i = 0; i != packet->len; i++) {
-            if (packet->data[i] < bs_start) {
-                trmt_buf[ix++] = packet->data[i];
-            } else {
-                trmt_buf[ix++] = bs_stuffing;
-                trmt_buf[ix++] = bs_stuffing - packet->data[i];
-            }
+            tmp_buf[ix++] = packet->data[i];
         }
     }
 
-    union {
-        uint8_t data[2];
-        uint16_t val;
-    } crc;
-    crc.val = calcCrc16CCITT(trmt_buf, ix);
-    if (crc.data[1] < bs_start) {
-        trmt_buf[ix++] = crc.data[1];
-    } else {
-        trmt_buf[ix++] = bs_stuffing;
-        trmt_buf[ix++] = bs_stuffing - crc.data[1];
-    }
-    if (crc.data[0] < bs_start) {
-        trmt_buf[ix++] = crc.data[0];
-    } else {
-        trmt_buf[ix++] = bs_stuffing;
-        trmt_buf[ix++] = bs_stuffing - crc.data[0];
+    uint16_t crc = calcCrc16CCITT(tmp_buf, ix);
+    uint8_t crc_byte = ((crc & 0xff00) >> 8);
+    tmp_buf[ix++] = crc_byte;
+    crc_byte = crc & 0xff;
+    tmp_buf[ix++] = crc_byte;
+
+    uint8_t trmt_buf[sizeof(struct packet) * 2 + 2] = {0};
+    uint8_t ix2 = 0;
+    trmt_buf[ix2++] = bs_start;
+
+    for (uint8_t i = 0; i != ix; i++) {
+        if (tmp_buf[i] >= bs_start) {
+            trmt_buf[ix2++] = bs_stuffing;
+            trmt_buf[ix2++] = bs_stuffing - tmp_buf[i];
+        } else {
+            trmt_buf[ix2++] = tmp_buf[i];
+        }
     }
 
+    trmt_buf[ix2++] = bs_stop;
+
     if (trans) {
-        trans(trmt_buf, ix);
+        trans(trmt_buf, ix2);
     }
 }

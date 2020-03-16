@@ -3,13 +3,16 @@
 #include <string.h>
 
 
-static addr_t addr;
+static addr_t addr = 0x01;
 static struct packet packet = {0};
 const struct packet def_packet = {0};
 
 
 void set_addres(addr_t a) {
-    addr = a;
+    if (a == 0xff || a == 0x00)
+        addr = 0x01;
+    else
+        addr = a;
 }
 
 
@@ -26,6 +29,10 @@ struct packet * parse_recieve(uint8_t *d, uint8_t len) {
 #endif
     if (packet.addr != addr && packet.addr != BROADCAST_ADDR) {
         return NULL;
+    }
+
+    if (packet.addr == BROADCAST_ADDR) {
+        packet.addr = addr;
     }
 
     packet.id = d[ID_POS];
