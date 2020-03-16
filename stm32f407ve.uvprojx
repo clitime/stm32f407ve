@@ -71,13 +71,13 @@
           </BeforeCompile>
           <BeforeMake>
             <RunUserProg1>1</RunUserProg1>
-            <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name>ceedling.bat test:all</UserProg1Name>
-            <UserProg2Name></UserProg2Name>
+            <RunUserProg2>1</RunUserProg2>
+            <UserProg1Name>python.exe ./scripts/semver.py</UserProg1Name>
+            <UserProg2Name>ceedling.bat test:all</UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopB1X>2</nStopB1X>
-            <nStopB2X>0</nStopB2X>
+            <nStopB2X>2</nStopB2X>
           </BeforeMake>
           <AfterMake>
             <RunUserProg1>0</RunUserProg1>
@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F40XX</Define>
               <Undefine></Undefine>
-              <IncludePath>.\src\cmsis;.\lib\cmsis\Include;.\lib\cmsis\Device\ST\STM32F4xx\Include;.\lib\STM32F4xx_StdPeriph_Driver\inc;.\src;.\src\drivers;.\src\timers;.\src\queue;.\src\protocol</IncludePath>
+              <IncludePath>.\src\cmsis;.\lib\cmsis\Include;.\lib\cmsis\Device\ST\STM32F4xx\Include;.\lib\STM32F4xx_StdPeriph_Driver\inc;.\src;.\src\drivers;.\src\timers;.\src\queue;.\src\protocol;.\src\version</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -482,6 +482,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\drivers\uart.c</FilePath>
             </File>
+            <File>
+              <FileName>tim6.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\drivers\tim6.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -496,11 +501,6 @@
               <FileName>timers.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\timers\timers.c</FilePath>
-            </File>
-            <File>
-              <FileName>tim6.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\timers\tim6.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -531,6 +531,16 @@
               <FileName>command_parser.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\protocol\command_parser.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>version</GroupName>
+          <Files>
+            <File>
+              <FileName>version.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\version\version.c</FilePath>
             </File>
           </Files>
         </Group>
