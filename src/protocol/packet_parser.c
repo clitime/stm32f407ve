@@ -1,7 +1,7 @@
 #include "packet_parser.h"
 #include <stddef.h>
 #include <string.h>
-
+#include <stdio.h>
 
 static addr_t addr = 0x01;
 static struct packet packet = {0};
@@ -22,7 +22,7 @@ struct packet * parse_recieve(uint8_t *d, uint8_t len) {
     }
     packet = def_packet;
 
-#if BROADCAST_ADDR==0xffff
+#ifdef ADDR_TWO_BYTE
     packet.addr = d[ADDR_POS] | (d[ADDR_POS + 1] << 8);
 #else
     packet.addr = d[ADDR_POS];

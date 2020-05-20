@@ -3,15 +3,23 @@
 
 #include <stdint.h>
 
+#define ADDR_TWO_BYTE
 
 #ifndef addr_t
+#ifdef ADDR_TWO_BYTE
+    typedef uint16_t addr_t;
+#else
     typedef uint8_t addr_t;
+#endif
 #endif
 
 
-#define BROADCAST_EXPR (sizeof(addr_t) == 2 ? 0xffff : 0xff)
 enum {
-    BROADCAST_ADDR = BROADCAST_EXPR
+#ifdef ADDR_TWO_BYTE
+    BROADCAST_ADDR = 0xffff
+#else
+    BROADCAST_ADDR = 0xff
+#endif
 };
 
 

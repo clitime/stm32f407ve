@@ -133,7 +133,7 @@ static bool check_crc(void) {
 static void parse_transmit(const struct packet *packet, const struct packet *recv_packet) {
     uint8_t tmp_buf[sizeof(struct packet)] = {0};
     uint8_t ix = 0;
-#if BROADCAST_ADDR==0xffff
+#ifdef ADDR_TWO_BYTE
     tmp_buf[ix++] = (uint8_t)(recv_packet->addr & 0xff);
     tmp_buf[ix++] = (uint8_t)((recv_packet->addr >> 8) & 0xff);
 #else

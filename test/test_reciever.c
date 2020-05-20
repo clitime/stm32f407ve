@@ -34,14 +34,30 @@ void test_simpleTransportUpdate(void) {
     const char dev_type[] = "test";
     get_device_type_ExpectAndReturn(dev_type);
 
+#ifdef ADDR_TWO_BYTE
+    uint16_t crc = calcCrc16CCITT((uint8_t []){0xff, 0xff, 0x02, 0x03, 0x70, 0x00}, 6);
+    uint8_t test_packet[] = {0xfd, 0xff, 0x00, 0xff, 0x00, 0x02, 0x03, 0x70, 0x00,
+                            ((crc & 0xff00) >> 8), (crc & 0xff), 0xfe};
+#else
     uint16_t crc = calcCrc16CCITT((uint8_t []){0xff, 0x02, 0x03, 0x70, 0x00}, 5);
     uint8_t test_packet[] = {0xfd, 0xff, 0x00, 0x02, 0x03, 0x70, 0x00,
                             ((crc & 0xff00) >> 8), (crc & 0xff), 0xfe};
+#endif
 
     for (uint8_t ix = 0; ix != sizeof(test_packet); ix++) {
         transport_update(test_packet[ix]);
     }
 
+#ifdef ADDR_TWO_BYTE
+    crc = calcCrc16CCITT((uint8_t []){test_addr, 0x00, 0x02, 0x03, (0x80 | 0x70), 53, 11, 't', 'e', 's', 't', ' ', 'd', 'e', 'v', 'i', 'c', 'e',
+            35, '0','.','0','.','1',' ','(','2','0','2','0','-','0','3','-','1','7',' ','a','a','b','b',
+            'c','c','d','d','e','e','f','f','8','8','7','7',')',
+            04, 't','e','s','t'}, 59);
+    uint8_t expected[] = {0xfd, test_addr, 0x00, 0x02, 0x03, (0x80 | 0x70), 53, 11, 't', 'e', 's', 't', ' ', 'd', 'e', 'v', 'i', 'c', 'e',
+            35, '0','.','0','.','1',' ','(','2','0','2','0','-','0','3','-','1','7',' ','a','a','b','b',
+            'c','c','d','d','e','e','f','f','8','8','7','7',')',
+            04, 't','e','s','t', ((crc & 0xff00) >> 8), (crc & 0xff), 0xfe};
+#else
     crc = calcCrc16CCITT((uint8_t []){test_addr, 0x02, 0x03, (0x80 | 0x70), 53, 11, 't', 'e', 's', 't', ' ', 'd', 'e', 'v', 'i', 'c', 'e',
             35, '0','.','0','.','1',' ','(','2','0','2','0','-','0','3','-','1','7',' ','a','a','b','b',
             'c','c','d','d','e','e','f','f','8','8','7','7',')',
@@ -50,5 +66,6 @@ void test_simpleTransportUpdate(void) {
             35, '0','.','0','.','1',' ','(','2','0','2','0','-','0','3','-','1','7',' ','a','a','b','b',
             'c','c','d','d','e','e','f','f','8','8','7','7',')',
             04, 't','e','s','t', ((crc & 0xff00) >> 8), (crc & 0xff), 0xfe};
+#endif
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, trans_buffer, sizeof(expected));
 }
